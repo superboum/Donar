@@ -111,3 +111,14 @@ In a third terminal:
 
 Get a look at the `scripts/2021/` folder, and start by the file `donardup`.
 In this folder, you will find the files that I have used to automate my latest tests.
+
+## 6) Test with 2-relay circuits
+
+To test with 2-relay circuits instead of 3-relay ones, you must compile your own patched version of Tor.
+The only modification you need is to set the `DEFAULT_ROUTE_LEN` constant to `2` instead of `3`.
+Currently, this constant is here:
+
+```
+./src/core/or/or.h:894:#define DEFAULT_ROUTE_LEN 3
+```
+
