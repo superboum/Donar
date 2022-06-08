@@ -43,7 +43,7 @@ Compile the binaries:
 ```
 mkdir target ; cd target
 cmake ..
-make -j8
+make -j$(nproc)
 ```
 
 ## 3) Callee
