@@ -2,52 +2,48 @@
 
 Donar enables anonymous VoIP with good quality-of-experience (QoE) over the Tor network. No individual Tor link can match VoIP networking requirements. Donar bridges this gap by spreading VoIP traffic over several links.
 
-## 1) Runtime dependencies
+## 1) Download build+runtime dependencies
 
-On Fedora:
-
-```bash
-sudo dnf install -y \
-  glib2 \
-  gstreamer1 \
-  libevent \
-  zlib \
-  openssl \
-  libzstd \
-  xz-libs \
-  wget \
-  unzip
-```
-
-On Ubuntu:
+Instructions are provided for Debian 11 "bullseye" (current Debian stable a:
 
 ```bash
+sudo apt update
 sudo apt-get install -y \
+  build-essential \
+  cmake \
   libglib2.0-0 \
   libgstreamer1.0 \
+  libgstreamer-plugins-bad1.0-dev \
   gstreamer1.0-alsa \
   gstreamer1.0-plugins-bad \
   gstreamer1.0-plugins-good \
   gstreamer1.0-plugins-ugly \
+  gstreamer1.0-plugins-rtp \
   gstreamer1.0-pulseaudio \
   libevent-2.1 \
   zlib1g \
   libssl1.1 \
   zstd \
   liblzma5 \
-  wget \
-  unzip
+  git \
+  tor
 ```
 
-## 2) Obtain binaries
+## 2) Compile binaries
 
-Download the version you want here: https://cloud.deuxfleurs.fr/d/612993c04e9d40609242/
+Download this repository:
 
-And extract the zip file:
+```
+git clone https://github.com/superboum/Donar.git
+cd Donar
+```
 
-```bash
-unzip donar*.zip
-cd release
+Compile the binaries:
+
+```
+mkdir target ; cd target
+cmake ..
+make -j8
 ```
 
 ## 3) Callee
@@ -55,13 +51,23 @@ cd release
 In a first terminal:
 
 ```bash
-./tor2 -f torrc_guard_12
+touch /tmp/empty
+tor \
+  -f /tmp/empty \
+  --defaults-torrc /tmp/empty \
+  --hush \
+  --UseEntryGuards 1 \
+  --NumEntryGuards 2 \
+  --NumPrimaryGuards 2 \
+  --SocksPort 0 \
+  --ControlPort 9100 \
+  --DataDirectory /tmp/tor-callee
 ```
 
 In a second terminal:
 
 ```bash
-./donar -s -a lightning -l 12 -p 'fast_count=3!tick_tock=0!window=2000' -e 5000 -r 5000
+./donar -s -a lightning -l 12 -p 'fast_count=3!tick_tock=0!measlat=0!window=2000' -e 5000 -r 5000
 ```
 
 In a third terminal:
@@ -77,7 +83,16 @@ Your "address" is contained inside the `onion_services.pub`, you must transmit i
 In a first terminal:
 
 ```bash
-./tor2 -f torrc_guard_12
+touch /tmp/empty
+/usr/local/bin/tor3 \
+  -f /tmp/empty \
+  --defaults-torrc /tmp/empty \
+  --hush \
+  --UseEntryGuards 1 \
+  --NumEntryGuards 2 \
+  --NumPrimaryGuards 2 \
+  --SocksPort "127.0.0.1:9000 IsolateDestPort IsolateDestAddr IsolateClientAddr" \
+  --DataDirectory /tmp/tor-caller
 ```
 
 In a second terminal:
@@ -92,4 +107,7 @@ In a third terminal:
 ./dcall 127.13.3.7
 ```
 
+## 5) Other configurations and tools
 
+Get a look at the `scripts/2021/` folder, and start by the file `donardup`.
+In this folder, you will find the files that I have used to automate my latest tests.
